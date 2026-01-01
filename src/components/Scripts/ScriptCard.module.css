@@ -1,0 +1,125 @@
+.card {
+  background-color: var(--surface-color, #21252b);
+  border: 1px solid var(--border-color, #3e4451);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  transition: all 0.2s ease;
+  min-height: 150px;
+  cursor: pointer;
+}
+
+.card:hover {
+  border-color: var(--accent-color, #61afef);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(97, 175, 239, 0.2);
+}
+
+.cardContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-color, #abb2bf);
+  line-height: 1.4;
+}
+
+.description {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--text-secondary-color, #5c6370);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cardFooter {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.executeButton {
+  padding: 0.625rem 1.25rem;
+  background-color: var(--accent-color, #61afef);
+  color: var(--bg-color, #282c34);
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.executeButton:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(97, 175, 239, 0.3);
+}
+
+.executeButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(40, 44, 52, 0.3);
+  border-top-color: var(--bg-color, #282c34);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Tema claro */
+[data-theme='light'] .card {
+  background-color: var(--surface-color, #f5f5f5);
+  border-color: var(--border-color, #e0e0e0);
+}
+
+[data-theme='light'] .card:hover {
+  border-color: var(--accent-color, #528bcc);
+  box-shadow: 0 4px 12px rgba(82, 139, 204, 0.2);
+}
+
+[data-theme='light'] .title {
+  color: var(--text-color, #2c313c);
+}
+
+[data-theme='light'] .description {
+  color: var(--text-secondary-color, #5c6370);
+}
+
+[data-theme='light'] .executeButton {
+  background-color: var(--accent-color, #528bcc);
+  color: #ffffff;
+}
+
+[data-theme='light'] .executeButton:hover:not(:disabled) {
+  box-shadow: 0 2px 8px rgba(82, 139, 204, 0.3);
+}
+
+[data-theme='light'] .spinner {
+  border-color: rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+}
+

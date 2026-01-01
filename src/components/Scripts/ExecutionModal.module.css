@@ -1,0 +1,321 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal {
+  background-color: var(--surface-color, #21252b);
+  border: 1px solid var(--border-color, #3e4451);
+  border-radius: 0.75rem;
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border-color, #3e4451);
+}
+
+.headerContent {
+  flex: 1;
+}
+
+.title {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-color, #abb2bf);
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.statusIcon {
+  font-size: 1.125rem;
+}
+
+.statusText {
+  font-size: 0.875rem;
+  color: var(--text-secondary-color, #5c6370);
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: var(--text-secondary-color, #5c6370);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  line-height: 1;
+  transition: all 0.2s ease;
+  border-radius: 0.25rem;
+}
+
+.closeButton:hover {
+  background-color: var(--border-color, #3e4451);
+  color: var(--text-color, #abb2bf);
+}
+
+.logsContainer {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.25rem 1.5rem;
+  background-color: var(--bg-color, #282c34);
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.9375rem;
+  line-height: 1.8;
+  min-height: 200px;
+  max-height: 60vh;
+}
+
+.logsContainer::-webkit-scrollbar {
+  width: 8px;
+}
+
+.logsContainer::-webkit-scrollbar-track {
+  background: var(--surface-color, #21252b);
+}
+
+.logsContainer::-webkit-scrollbar-thumb {
+  background: var(--border-color, #3e4451);
+  border-radius: 4px;
+}
+
+.logsContainer::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary-color, #5c6370);
+}
+
+.logLine {
+  margin: 0.5rem 0;
+  padding: 0.625rem 0.875rem;
+  word-break: break-word;
+  white-space: pre-wrap;
+  border-radius: 0.375rem;
+  background-color: rgba(255, 255, 255, 0.02);
+  transition: background-color 0.2s ease;
+  letter-spacing: 0.3px;
+}
+
+.logLine:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.logStdout {
+  color: var(--text-color, #abb2bf);
+  border-left: 3px solid transparent;
+}
+
+.logStdout:first-child {
+  margin-top: 0;
+}
+
+.logError {
+  color: var(--error-color, #e06c75);
+  background-color: rgba(224, 108, 117, 0.12);
+  border-left: 3px solid var(--error-color, #e06c75);
+  font-weight: 500;
+}
+
+.emptyLogs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-secondary-color, #5c6370);
+}
+
+.loadingIndicator {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.loadingDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--accent-color, #61afef);
+  animation: bounce 1.4s infinite ease-in-out both;
+}
+
+.loadingDot:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.loadingDot:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+@keyframes bounce {
+  0%,
+  80%,
+  100% {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border-color, #3e4451);
+}
+
+.copyButton,
+.closeButtonFooter {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border-color, #3e4451);
+  border-radius: 0.5rem;
+  background-color: var(--surface-color, #21252b);
+  color: var(--text-color, #abb2bf);
+  cursor: pointer;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.copyButton:hover,
+.closeButtonFooter:hover {
+  background-color: var(--border-color, #3e4451);
+  transform: translateY(-1px);
+}
+
+.closeButtonFooter {
+  background-color: var(--accent-color, #61afef);
+  color: var(--bg-color, #282c34);
+  border-color: var(--accent-color, #61afef);
+}
+
+.closeButtonFooter:hover {
+  background-color: var(--accent-color, #61afef);
+  opacity: 0.9;
+}
+
+/* Tema claro */
+[data-theme='light'] .modal {
+  background-color: var(--surface-color, #f5f5f5);
+  border-color: var(--border-color, #e0e0e0);
+}
+
+[data-theme='light'] .header {
+  border-bottom-color: var(--border-color, #e0e0e0);
+}
+
+[data-theme='light'] .title {
+  color: var(--text-color, #2c313c);
+}
+
+[data-theme='light'] .statusText {
+  color: var(--text-secondary-color, #5c6370);
+}
+
+[data-theme='light'] .closeButton:hover {
+  background-color: var(--border-color, #e0e0e0);
+  color: var(--text-color, #2c313c);
+}
+
+[data-theme='light'] .logsContainer {
+  background-color: var(--bg-color, #ffffff);
+}
+
+[data-theme='light'] .logStdout {
+  color: var(--text-color, #2c313c);
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+[data-theme='light'] .logStdout:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme='light'] .logError {
+  color: var(--error-color, #b85450);
+  background-color: rgba(184, 84, 80, 0.1);
+  border-left-color: var(--error-color, #b85450);
+}
+
+[data-theme='light'] .footer {
+  border-top-color: var(--border-color, #e0e0e0);
+}
+
+[data-theme='light'] .copyButton,
+[data-theme='light'] .closeButtonFooter {
+  background-color: var(--surface-color, #f5f5f5);
+  border-color: var(--border-color, #e0e0e0);
+  color: var(--text-color, #2c313c);
+}
+
+[data-theme='light'] .copyButton:hover,
+[data-theme='light'] .closeButtonFooter:hover {
+  background-color: var(--border-color, #e0e0e0);
+}
+
+[data-theme='light'] .closeButtonFooter {
+  background-color: var(--accent-color, #528bcc);
+  color: #ffffff;
+  border-color: var(--accent-color, #528bcc);
+}
+
+[data-theme='light'] .closeButtonFooter:hover {
+  background-color: var(--accent-color, #528bcc);
+  opacity: 0.9;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .modal {
+    width: 95%;
+    max-height: 95vh;
+  }
+
+  .logsContainer {
+    max-height: 50vh;
+    font-size: 0.75rem;
+  }
+}
+
