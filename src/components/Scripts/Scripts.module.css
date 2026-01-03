@@ -5,6 +5,21 @@
   background-color: var(--bg-color, #282c34);
   color: var(--text-color, #abb2bf);
   transition: background-color 0.3s ease, color 0.3s ease;
+  position: relative;
+}
+
+.watermark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('/logo-app.png');
+  background-repeat: repeat;
+  background-size: 100px 100px;
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 0;
 }
 
 .header {
@@ -14,6 +29,20 @@
   padding: 1rem 1.5rem;
   border-bottom: 1px solid var(--border-color, #3e4451);
   background-color: var(--surface-color, #21252b);
+  position: relative;
+  z-index: 1;
+}
+
+.headerContent {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.logo {
+  width: 1.25rem;
+  height: 1.25rem;
+  object-fit: contain;
 }
 
 .title {
@@ -70,6 +99,8 @@
   flex: 1;
   overflow-y: auto;
   padding: 1.5rem;
+  position: relative;
+  z-index: 1;
 }
 
 .content::-webkit-scrollbar {
@@ -169,5 +200,9 @@
 
 [data-theme='light'] .emptyTitle {
   color: var(--text-color, #2c313c);
+}
+
+[data-theme='light'] .watermark {
+  opacity: 0.02;
 }
 

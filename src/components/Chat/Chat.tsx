@@ -56,8 +56,12 @@ export function Chat() {
 
   return (
     <div className={styles.chatContainer}>
+      <div className={styles.watermark}></div>
       <div className={styles.header}>
-        <h1 className={styles.title}>Linux AI Helper</h1>
+        <div className={styles.headerContent}>
+          <img src="/logo-app.png" alt="Logo" className={styles.logo} />
+          <h1 className={styles.title}>Linux AI Helper</h1>
+        </div>
         <button
           type="button"
           onClick={toggleTheme}

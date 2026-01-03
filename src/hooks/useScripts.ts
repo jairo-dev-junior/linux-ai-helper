@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Message } from '../types/chat';
 import { Script } from '../types/script';
 import { extractScriptsFromMessages } from '../utils/scriptParser';
-import { loadScriptsFromStorage, saveScriptsToStorage, addScriptToStorage } from '../utils/scriptStorage';
+import { loadScriptsFromStorage, saveScriptsToStorage, addScriptToStorage, deleteScriptFromStorage } from '../utils/scriptStorage';
 
 const DEMO_SCRIPT_KEY = 'linux-ai-helper-demo-script-added';
 
@@ -39,6 +39,7 @@ interface UseScriptsReturn {
   scripts: Script[];
   refreshScripts: () => void;
   addScript: (script: Omit<Script, 'id' | 'createdAt' | 'messageId'>) => void;
+  deleteScript: (scriptId: string) => void;
 }
 
 /**
@@ -94,6 +95,18 @@ export function useScripts({ messages }: UseScriptsProps): UseScriptsReturn {
     });
   }, []);
 
+  const deleteScript = useCallback((scriptId: string) => {
+    // Usar função utilitária para excluir script
+    const deleted = deleteScriptFromStorage(scriptId);
+    
+    if (deleted) {
+      // Atualizar estado imediatamente
+      setScripts((prevScripts) => {
+        return prevScripts.filter(script => script.id !== scriptId);
+      });
+    }
+  }, []);
+
   useEffect(() => {
     refreshScripts();
   }, [refreshScripts]);
@@ -102,6 +115,7 @@ export function useScripts({ messages }: UseScriptsProps): UseScriptsReturn {
     scripts,
     refreshScripts,
     addScript,
+    deleteScript,
   };
 }
 

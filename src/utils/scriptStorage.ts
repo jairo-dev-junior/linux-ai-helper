@@ -63,3 +63,23 @@ export function addScriptToStorage(script: Omit<Script, 'id' | 'createdAt' | 'me
   return newScript;
 }
 
+/**
+ * Remove um script do storage pelo ID
+ */
+export function deleteScriptFromStorage(scriptId: string): boolean {
+  try {
+    const savedScripts = loadScriptsFromStorage();
+    const initialLength = savedScripts.length;
+    const filteredScripts = savedScripts.filter(script => script.id !== scriptId);
+    
+    if (filteredScripts.length < initialLength) {
+      saveScriptsToStorage(filteredScripts);
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.warn('Erro ao excluir script do storage:', error);
+    return false;
+  }
+}
+

@@ -1,6 +1,6 @@
 import styles from './Navigation.module.css';
 
-export type Page = 'chat' | 'scripts';
+export type Page = 'home' | 'chat' | 'scripts';
 
 interface NavigationProps {
   currentPage: Page;
@@ -12,17 +12,24 @@ export function Navigation({ currentPage, onPageChange }: NavigationProps) {
     <nav className={styles.navigation}>
       <button
         type="button"
+        className={`${styles.navButton} ${currentPage === 'home' ? styles.active : ''}`}
+        onClick={() => onPageChange('home')}
+      >
+        🏠 Início
+      </button>
+      <button
+        type="button"
         className={`${styles.navButton} ${currentPage === 'chat' ? styles.active : ''}`}
         onClick={() => onPageChange('chat')}
       >
-        Chat
+        💬 Chat
       </button>
       <button
         type="button"
         className={`${styles.navButton} ${currentPage === 'scripts' ? styles.active : ''}`}
         onClick={() => onPageChange('scripts')}
       >
-        Scripts
+        📜 Scripts
       </button>
     </nav>
   );

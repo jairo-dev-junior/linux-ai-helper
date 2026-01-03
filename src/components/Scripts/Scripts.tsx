@@ -8,19 +8,22 @@ import { ScriptCard } from './ScriptCard';
 import { ExecutionModal } from './ExecutionModal';
 import { ViewScriptModal } from './ViewScriptModal';
 import { AddScriptModal } from './AddScriptModal';
+import { PasswordModal } from './PasswordModal';
 import { executeScript, validateScript } from '../../utils/scriptExecutor';
 import styles from './Scripts.module.css';
 
 export function Scripts() {
   const { messages } = useChatContext();
-  const { scripts, addScript } = useScripts({ messages });
+  const { scripts, addScript, deleteScript } = useScripts({ messages });
   const { theme, toggleTheme } = useTheme();
   const [selectedScript, setSelectedScript] = useState<Script | null>(null);
   const [execution, setExecution] = useState<ScriptExecution | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [executingScriptId, setExecutingScriptId] = useState<string | null>(null);
+  const [pendingPassword, setPendingPassword] = useState<((password: string) => void) | null>(null);
 
   const handleExecute = async (script: Script) => {
     // Validar script
@@ -32,7 +35,7 @@ export function Scripts() {
 
     setSelectedScript(script);
     setExecutingScriptId(script.id);
-    setIsModalOpen(true);
+    // Não abrir o modal automaticamente, apenas quando o usuário clicar em "Ver Execução"
     setExecution({
       scriptId: script.id,
       status: 'running',
@@ -42,19 +45,59 @@ export function Scripts() {
 
     // Executar script
     const logs: string[] = [];
-    const executionResult = await executeScript(script, (log, isError) => {
-      logs.push(log);
-      setExecution((prev) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          logs: [...logs],
-        };
-      });
-    });
+    const executionResult = await executeScript(
+      script,
+      (log, isError) => {
+        logs.push(log);
+        setExecution((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            logs: [...prev.logs, log],
+          };
+        });
+      },
+      async () => {
+        // Função para solicitar senha
+        return new Promise<string>((resolve) => {
+          setPendingPassword(() => resolve);
+          setIsPasswordModalOpen(true);
+        });
+      }
+    );
 
-    setExecution(executionResult);
+    // Atualizar execução com resultado final
+    setExecution((prev) => {
+      if (!prev || prev.scriptId !== script.id) return prev;
+      return {
+        ...prev,
+        status: executionResult.status,
+        endTime: executionResult.endTime,
+        exitCode: executionResult.exitCode,
+      };
+    });
     setExecutingScriptId(null);
+  };
+
+  const handleViewExecution = (script: Script) => {
+    setSelectedScript(script);
+    setIsModalOpen(true);
+  };
+
+  const handlePasswordConfirm = (password: string) => {
+    setIsPasswordModalOpen(false);
+    if (pendingPassword) {
+      pendingPassword(password);
+      setPendingPassword(null);
+    }
+  };
+
+  const handlePasswordCancel = () => {
+    setIsPasswordModalOpen(false);
+    if (pendingPassword) {
+      pendingPassword(''); // Enviar senha vazia para cancelar
+      setPendingPassword(null);
+    }
   };
 
   const handleCloseModal = () => {
@@ -77,10 +120,18 @@ export function Scripts() {
     setSelectedScript(null);
   };
 
+  const handleDeleteScript = (scriptId: string) => {
+    deleteScript(scriptId);
+  };
+
   return (
     <div className={styles.scriptsContainer}>
+      <div className={styles.watermark}></div>
       <div className={styles.header}>
-        <h1 className={styles.title}>Scripts</h1>
+        <div className={styles.headerContent}>
+          <img src="/logo-app.png" alt="Logo" className={styles.logo} />
+          <h1 className={styles.title}>Scripts</h1>
+        </div>
         <div className={styles.headerActions}>
           <button
             type="button"
@@ -117,6 +168,8 @@ export function Scripts() {
                 script={script}
                 onExecute={handleExecute}
                 onView={handleViewScript}
+                onDelete={handleDeleteScript}
+                onViewExecution={handleViewExecution}
                 isExecuting={executingScriptId === script.id}
               />
             ))}
@@ -142,6 +195,12 @@ export function Scripts() {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSave={handleAddScript}
+      />
+
+      <PasswordModal
+        isOpen={isPasswordModalOpen}
+        onConfirm={handlePasswordConfirm}
+        onCancel={handlePasswordCancel}
       />
     </div>
   );

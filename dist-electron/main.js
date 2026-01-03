@@ -5,7 +5,7 @@ import path$3 from "node:path";
 import require$$0$1 from "os";
 import require$$1$1 from "fs";
 import require$$2 from "path";
-import require$$1, { exec as exec$h } from "child_process";
+import require$$1, { exec as exec$h, spawn as spawn$1 } from "child_process";
 import require$$4, { promisify as promisify$1 } from "util";
 import require$$5 from "https";
 import require$$6 from "http";
@@ -17764,7 +17764,8 @@ bluetooth.bluetoothDevices = bluetoothDevices;
   exports$1.powerShellRelease = util2.powerShellRelease;
 })(lib);
 const si = /* @__PURE__ */ getDefaultExportFromCjs(lib);
-const execAsync = promisify$1(exec$h);
+promisify$1(exec$h);
+const runningScripts = /* @__PURE__ */ new Map();
 createRequire(import.meta.url);
 const __dirname$1 = path$3.dirname(fileURLToPath(import.meta.url));
 process.env.APP_ROOT = path$3.join(__dirname$1, "..");
@@ -17899,53 +17900,154 @@ ipcMain.handle("get-system-data", async () => {
     throw error;
   }
 });
-ipcMain.handle("execute-script", async (_event, { scriptId, content }) => {
+ipcMain.handle("execute-script", async (event, { scriptId, content, onPasswordRequest }) => {
   try {
     console.log(`Executando script ${scriptId}...`);
     const logs = [];
     let exitCode = 0;
-    try {
-      const { stdout, stderr } = await execAsync(content, {
-        maxBuffer: 1024 * 1024 * 10,
-        // 10MB buffer
-        timeout: 3e5
-        // 5 minutos timeout
+    return new Promise((resolve) => {
+      var _a, _b;
+      let modifiedContent = content;
+      if (onPasswordRequest && content.toLowerCase().includes("sudo")) {
+        modifiedContent = content.replace(/\bsudo\s+(?!-S)/g, "sudo -S ");
+        console.log(`[${scriptId}] Script modificado para usar sudo -S`);
+      }
+      const shell2 = process.platform === "win32" ? "cmd.exe" : "/bin/bash";
+      const args = process.platform === "win32" ? ["/c", modifiedContent] : ["-c", modifiedContent];
+      const childProcess = spawn$1(shell2, args, {
+        stdio: ["pipe", "pipe", "pipe"],
+        shell: false,
+        // Garantir que o stdin esteja disponível
+        detached: false
       });
-      if (stdout) {
-        stdout.split("\n").forEach((line) => {
-          if (line.trim()) {
-            logs.push({ text: line, isError: false });
-          }
-        });
+      if (childProcess.stdin) {
+        childProcess.stdin.setDefaultEncoding("utf8");
       }
-      if (stderr) {
-        stderr.split("\n").forEach((line) => {
-          if (line.trim()) {
-            logs.push({ text: line, isError: true });
-          }
+      const hasSudoModified = modifiedContent !== content;
+      runningScripts.set(scriptId, {
+        process: childProcess,
+        logs,
+        hasSudoModified
+        // Flag para indicar que foi modificado
+      });
+      let stdoutBuffer = "";
+      let stderrBuffer = "";
+      const needsPassword = (text) => {
+        const lowerText = text.toLowerCase();
+        return lowerText.includes("[sudo] password for") || lowerText.match(/\[sudo\]\s+password\s+for/i) !== null || lowerText.includes("password") && lowerText.includes("sudo") || lowerText.trim().endsWith("password:") || lowerText.trim().endsWith("senha:") || lowerText.match(/password\s*:\s*$/i) !== null || lowerText.match(/senha\s*:\s*$/i) !== null;
+      };
+      let passwordRequested = false;
+      let passwordProvided = false;
+      (_a = childProcess.stdout) == null ? void 0 : _a.on("data", (data) => {
+        const text = data.toString();
+        stdoutBuffer += text;
+        if (onPasswordRequest && !passwordRequested && needsPassword(text)) {
+          passwordRequested = true;
+          passwordProvided = false;
+          event.sender.send("request-password", { scriptId });
+        } else if (!passwordRequested || passwordProvided) {
+          const lines = text.split("\n");
+          lines.forEach((line) => {
+            if (line.trim()) {
+              logs.push({ text: line, isError: false });
+              event.sender.send("script-log", { scriptId, log: line, isError: false });
+            }
+          });
+        }
+      });
+      (_b = childProcess.stderr) == null ? void 0 : _b.on("data", (data) => {
+        const text = data.toString();
+        stderrBuffer += text;
+        if (onPasswordRequest && !passwordRequested && needsPassword(text)) {
+          passwordRequested = true;
+          passwordProvided = false;
+          console.log(`[${scriptId}] Prompt de senha detectado no stderr:`, text.trim());
+          event.sender.send("request-password", { scriptId });
+          return;
+        } else if (!passwordRequested || passwordProvided) {
+          const lines = text.split("\n");
+          lines.forEach((line) => {
+            if (line.trim() && !needsPassword(line)) {
+              logs.push({ text: line, isError: true });
+              event.sender.send("script-log", { scriptId, log: line, isError: true });
+            }
+          });
+        }
+      });
+      childProcess.on("close", (code) => {
+        exitCode = code || 0;
+        runningScripts.delete(scriptId);
+        event.sender.send("script-finish", { scriptId, exitCode });
+        console.log(`Script ${scriptId} finalizado com código ${exitCode}`);
+        resolve({
+          exitCode,
+          logs
         });
-      }
-    } catch (error) {
-      exitCode = error.code || 1;
-      const errorMessage = error.message || "Erro desconhecido";
-      logs.push({ text: `Erro na execução: ${errorMessage}`, isError: true });
-      if (error.stderr) {
-        error.stderr.split("\n").forEach((line) => {
-          if (line.trim()) {
-            logs.push({ text: line, isError: true });
-          }
+      });
+      childProcess.on("error", (error) => {
+        const errorMessage = error.message || "Erro desconhecido";
+        logs.push({ text: `Erro na execução: ${errorMessage}`, isError: true });
+        event.sender.send("script-log", { scriptId, log: `Erro na execução: ${errorMessage}`, isError: true });
+        exitCode = 1;
+        runningScripts.delete(scriptId);
+        event.sender.send("script-finish", { scriptId, exitCode });
+        resolve({
+          exitCode,
+          logs
         });
-      }
-    }
-    console.log(`Script ${scriptId} finalizado com código ${exitCode}`);
-    return {
-      exitCode,
-      logs
-    };
+      });
+      setTimeout(() => {
+        if (childProcess && !childProcess.killed) {
+          childProcess.kill();
+          const timeoutMessage = "Timeout: Script executado por mais de 5 minutos";
+          logs.push({ text: timeoutMessage, isError: true });
+          event.sender.send("script-log", { scriptId, log: timeoutMessage, isError: true });
+          exitCode = 124;
+          runningScripts.delete(scriptId);
+          event.sender.send("script-finish", { scriptId, exitCode });
+          resolve({
+            exitCode,
+            logs
+          });
+        }
+      }, 3e5);
+    });
   } catch (error) {
     console.error(`Erro ao executar script ${scriptId}:`, error);
     throw error;
   }
+});
+ipcMain.handle("provide-password", async (_event, { scriptId, password }) => {
+  const scriptData = runningScripts.get(scriptId);
+  if (scriptData && scriptData.process && !scriptData.process.killed) {
+    if (scriptData.process.stdin && !scriptData.process.stdin.destroyed) {
+      try {
+        console.log(`[${scriptId}] Tentando enviar senha (${password.length} caracteres)...`);
+        const hasSudoModified = scriptData.hasSudoModified;
+        if (hasSudoModified) {
+          console.log(`[${scriptId}] Script usa sudo -S, enviando senha imediatamente`);
+        }
+        const success = scriptData.process.stdin.write(password + "\n", "utf8");
+        if (!success) {
+          scriptData.process.stdin.once("drain", () => {
+            console.log(`[${scriptId}] Buffer drenado, senha enviada`);
+          });
+        } else {
+          console.log(`[${scriptId}] Senha enviada com sucesso`);
+        }
+        scriptData.passwordProvided = true;
+        return { success: true };
+      } catch (error) {
+        console.error(`[${scriptId}] Erro ao escrever senha no stdin:`, error);
+        return { success: false, error: "Erro ao enviar senha" };
+      }
+    } else {
+      console.error(`[${scriptId}] Stdin não disponível ou destruído`);
+      return { success: false, error: "Stdin não disponível" };
+    }
+  }
+  console.error(`[${scriptId}] Processo não encontrado ou já finalizado`);
+  return { success: false, error: "Processo não encontrado ou já finalizado" };
 });
 app.whenReady().then(createWindow);
 export {
