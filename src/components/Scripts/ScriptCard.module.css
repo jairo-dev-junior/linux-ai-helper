@@ -1,3 +1,7 @@
+.cardWrapper {
+  position: relative;
+}
+
 .card {
   background-color: var(--surface-color, #21252b);
   border: 1px solid var(--border-color, #3e4451);
@@ -9,7 +13,6 @@
   transition: all 0.2s ease;
   min-height: 150px;
   cursor: pointer;
-  position: relative;
 }
 
 .card:hover {
@@ -23,8 +26,6 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  padding-top: 0.5rem;
-  padding-left: 0.5rem;
 }
 
 .title {
@@ -102,12 +103,12 @@
 
 .deleteButton {
   position: absolute;
-  top: 0.75rem;
-  left: 0.75rem;
+  top: -0.5rem;
+  left: -0.5rem;
   padding: 0;
-  background-color: transparent;
+  background-color: var(--surface-color, #21252b);
   color: var(--text-secondary-color, #5c6370);
-  border: none;
+  border: 1px solid var(--border-color, #3e4451);
   border-radius: 50%;
   font-size: 1.5rem;
   font-weight: 300;
@@ -120,6 +121,7 @@
   width: 1.75rem;
   height: 1.75rem;
   z-index: 10;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .deleteButton:hover:not(:disabled) {
@@ -191,6 +193,8 @@
 }
 
 [data-theme='light'] .deleteButton {
+  background-color: var(--surface-color, #f5f5f5);
+  border-color: var(--border-color, #e0e0e0);
   color: var(--text-secondary-color, #5c6370);
 }
 

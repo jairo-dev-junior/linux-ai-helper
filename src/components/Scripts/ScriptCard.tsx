@@ -41,7 +41,7 @@ export function ScriptCard({ script, onExecute, onView, onDelete, onViewExecutio
   };
 
   return (
-    <div className={styles.card} onClick={handleCardClick}>
+    <div className={styles.cardWrapper}>
       <button
         type="button"
         className={styles.deleteButton}
@@ -51,36 +51,38 @@ export function ScriptCard({ script, onExecute, onView, onDelete, onViewExecutio
       >
         ×
       </button>
-      <div className={styles.cardContent}>
-        <h3 className={styles.title}>{script.title}</h3>
-        <p className={styles.description}>{script.description}</p>
-      </div>
-      <div className={styles.cardFooter}>
-        {isExecuting && onViewExecution ? (
-          <button
-            type="button"
-            className={styles.viewExecutionButton}
-            onClick={handleViewExecutionClick}
-          >
-            Ver Execução
-          </button>
-        ) : (
-          <button
-            type="button"
-            className={styles.executeButton}
-            onClick={handleExecuteClick}
-            disabled={isExecuting}
-          >
-            {isExecuting ? (
-              <>
-                <span className={styles.spinner}></span>
-                Executando...
-              </>
-            ) : (
-              'Executar'
-            )}
-          </button>
-        )}
+      <div className={styles.card} onClick={handleCardClick}>
+        <div className={styles.cardContent}>
+          <h3 className={styles.title}>{script.title}</h3>
+          <p className={styles.description}>{script.description}</p>
+        </div>
+        <div className={styles.cardFooter}>
+          {isExecuting && onViewExecution ? (
+            <button
+              type="button"
+              className={styles.viewExecutionButton}
+              onClick={handleViewExecutionClick}
+            >
+              Ver Execução
+            </button>
+          ) : (
+            <button
+              type="button"
+              className={styles.executeButton}
+              onClick={handleExecuteClick}
+              disabled={isExecuting}
+            >
+              {isExecuting ? (
+                <>
+                  <span className={styles.spinner}></span>
+                  Executando...
+                </>
+              ) : (
+                'Executar'
+              )}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
